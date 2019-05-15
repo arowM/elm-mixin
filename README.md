@@ -7,9 +7,25 @@ A brief Elm library for Mixins. The mixins are more flexible and reusable than `
 ## Example
 
 ```elm
-import Html
+import Html exposing (Html)
 import Html.Events as Events
-import Mixin
+import Mixin exposing (Mixin)
+
+...
+...
+
+formInput : Bool -> (String -> Msg) -> Mixin Msg
+formInput isInvalid onInput =
+    Mixin.batch
+        [ Mixin.fromAttribute <| Events.onInput onInput
+        , Mixin.class "formInput"
+        , Mixin.attribute "aria-invalid" <|
+            if isInvalid then
+                "true"
+            else
+                "false"
+        ]
+
 
 view : Model -> Html Msg
 view model =
@@ -36,18 +52,5 @@ view model =
                 ]
                 []
             ]
-        ]
-
-
-formInput : Bool -> (String -> Msg) -> Mixin Msg
-formInput isInvalid onChange =
-    Mixin.batch
-        [ Mixin.fromAttribute <| Events.onChange onChange
-        , Mixin.class "formInput"
-        , Mixin.attribute "aria-invalid" <|
-            if isInvalid then
-                "true"
-            else
-                "false"
         ]
 ```
