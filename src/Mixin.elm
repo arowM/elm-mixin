@@ -106,7 +106,7 @@ none =
             []
 
 -}
-lift : (List (Attribute msg) -> Html msg) -> List (Mixin msg) -> Html msg
+lift : (List (Attribute msg) -> List (Html msg) -> Html msg) -> List (Mixin msg) -> List (Html msg) -> Html msg
 lift n mixins =
     n <| List.concatMap toAttributes mixins
 
