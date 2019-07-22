@@ -12,6 +12,7 @@ module Mixin exposing
     , attribute
     , class
     , id
+    , style
     )
 
 {-| A brief module for Mixins.
@@ -48,6 +49,7 @@ module Mixin exposing
 @docs attribute
 @docs class
 @docs id
+@docs style
 
 -}
 
@@ -156,3 +158,9 @@ class =
 id : String -> Mixin msg
 id =
     fromAttribute << Attributes.id
+
+
+{-| -}
+style : String -> String -> Mixin msg
+style name val =
+    fromAttribute <| Attributes.style name val
