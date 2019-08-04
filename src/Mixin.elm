@@ -4,10 +4,6 @@ module Mixin exposing
     , toAttributes
     , batch
     , none
-    , lift
-    , node
-    , div
-    , span
     , fromAttribute
     , attribute
     , class
@@ -26,18 +22,6 @@ module Mixin exposing
 @docs none
 
 
-# Nodes
-
-@docs lift
-
-
-## Common nodes
-
-@docs node
-@docs div
-@docs span
-
-
 # Attributes
 
 @docs fromAttribute
@@ -51,7 +35,7 @@ module Mixin exposing
 
 -}
 
-import Html exposing (Attribute, Html)
+import Html exposing (Attribute)
 import Html.Attributes as Attributes
 
 
@@ -87,46 +71,6 @@ batch ls =
 none : Mixin msg
 none =
     Mixin []
-
-
-
--- Nodes
-
-
-{-| Lift nodes to take `Mixin`s instead of `Attribute`s.
-
-    import Html
-    import Mixin
-
-    view : Html msg
-    view =
-        Mixin.lift Html.form
-            [ Mixin.class "foo"
-            ]
-            []
-
--}
-lift : (List (Attribute msg) -> List (Html msg) -> Html msg) -> List (Mixin msg) -> List (Html msg) -> Html msg
-lift n mixins =
-    n <| List.concatMap toAttributes mixins
-
-
-{-| -}
-node : String -> List (Mixin msg) -> List (Html msg) -> Html msg
-node name mixins =
-    Html.node name <| List.concatMap toAttributes mixins
-
-
-{-| -}
-div : List (Mixin msg) -> List (Html msg) -> Html msg
-div mixins =
-    Html.div <| List.concatMap toAttributes mixins
-
-
-{-| -}
-span : List (Mixin msg) -> List (Html msg) -> Html msg
-span mixins =
-    Html.span <| List.concatMap toAttributes mixins
 
 
 
