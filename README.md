@@ -10,6 +10,7 @@ A brief Elm library for Mixins. The mixins are more flexible and reusable than `
 import Html exposing (Html)
 import Html.Events as Events
 import Mixin exposing (Mixin)
+import Mixin.Html as Mixin
 
 ...
 ...
