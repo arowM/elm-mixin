@@ -1,5 +1,6 @@
 module Mixin exposing
     ( Mixin
+    , map
     , fromAttributes
     , toAttributes
     , batch
@@ -33,6 +34,11 @@ module Mixin exposing
 @docs class
 @docs id
 
+
+## Lower level functions
+
+@docs map
+
 -}
 
 import Html exposing (Attribute)
@@ -47,6 +53,11 @@ import Html.Attributes as Attributes
 -}
 type Mixin msg
     = Mixin (List (Attribute msg))
+
+{-| -}
+map : (a -> b) -> Mixin a -> Mixin b
+map f (Mixin attrs) =
+    Mixin <| List.map (Attributes.map f) attrs
 
 
 {-| -}
