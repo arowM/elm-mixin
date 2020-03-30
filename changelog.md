@@ -3,3 +3,4 @@
 ### Improvements:
 
 * Add `map` function
+* Add `when` and `unless` function

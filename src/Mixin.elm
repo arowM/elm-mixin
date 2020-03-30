@@ -1,6 +1,5 @@
 module Mixin exposing
     ( Mixin
-    , map
     , fromAttributes
     , toAttributes
     , batch
@@ -9,6 +8,9 @@ module Mixin exposing
     , attribute
     , class
     , id
+    , when
+    , unless
+    , map
     )
 
 {-| A brief module for Mixins.
@@ -35,6 +37,12 @@ module Mixin exposing
 @docs id
 
 
+## Conditional functions
+
+@docs when
+@docs unless
+
+
 ## Lower level functions
 
 @docs map
@@ -53,6 +61,7 @@ import Html.Attributes as Attributes
 -}
 type Mixin msg
     = Mixin (List (Attribute msg))
+
 
 {-| -}
 map : (a -> b) -> Mixin a -> Mixin b
@@ -82,6 +91,28 @@ batch ls =
 none : Mixin msg
 none =
     Mixin []
+
+
+
+-- Conditional functions
+
+
+{-| Insert a `Mixin` only when conditions are met.
+-}
+when : Bool -> Mixin msg -> Mixin msg
+when p mixin =
+    if p then
+        mixin
+
+    else
+        none
+
+
+{-| Insert a `Mixin` unless conditions are met.
+-}
+unless : Bool -> Mixin msg -> Mixin msg
+unless p =
+    when <| not p
 
 
 
