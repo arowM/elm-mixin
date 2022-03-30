@@ -1,16 +1,16 @@
 # elm-mixin
 
-[![Build Status](https://travis-ci.org/arowM/elm-mixin.svg?branch=master)](https://travis-ci.org/arowM/elm-mixin)
+[![Build Status](https://api.travis-ci.com/arowM/elm-mixin.svg?branch=master)](https://app.travis-ci.com/github/arowM/elm-mixin)
 
-A brief Elm library for Mixins. The mixins are more flexible and reusable than `Html.Attribute msg`.
+Developer-friendly alternative to [`Html.Attribute`](https://package.elm-lang.org/packages/elm/html/latest/Html#Attribute), which can handle conditional attributes, [CSS custom properties](https://developer.mozilla.org/docs/Web/CSS/Using_CSS_custom_properties), and more.
 
 ## Example
 
 ```elm
 import Html exposing (Html)
-import Html.Events as Events
 import Mixin exposing (Mixin)
 import Mixin.Html as Mixin
+import Mixin.Events as Events
 
 ...
 ...
@@ -18,13 +18,9 @@ import Mixin.Html as Mixin
 formInput : Bool -> (String -> Msg) -> Mixin Msg
 formInput isInvalid onInput =
     Mixin.batch
-        [ Mixin.fromAttribute <| Events.onInput onInput
+        [ Events.onInput onInput
         , Mixin.class "formInput"
-        , Mixin.attribute "aria-invalid" <|
-            if isInvalid then
-                "true"
-            else
-                "false"
+        , Mixin.boolAttribute "aria-invalid" isInvalid
         ]
 
 
@@ -40,6 +36,11 @@ view model =
             , Mixin.lift Html.input
                 [ formInput (isInvalidName model) ChangeName
                 , Mixin.class "formInput-name"
+                , Mixin.style "--min-width" "10em"
+                , if model.requireMiddleName then
+                    Mixin.class "formInput-name-withMiddleName"
+                  else
+                    Mixin.none
                 ]
                 []
             ]
@@ -50,6 +51,7 @@ view model =
             , Mixin.lift Html.input
                 [ formInput (isInvalidAge model) ChangeAge
                 , Mixin.class "formInput-age"
+                , Mixin.style "--min-width" "6em"
                 ]
                 []
             ]

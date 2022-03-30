@@ -1,57 +1,94 @@
 module Mixin.Html exposing
-    ( lift
+    ( node
+    , keyed
     , div
     , span
+    , p
+    , a
     )
 
-{-| Helper functions to do well with `Html`s.
+{-| [`Html`](https://package.elm-lang.org/packages/elm/html/latest/Html) alternatives just for convenience.
 
 
-# Core
+# Primitives
 
-@docs lift
+@docs node
+@docs keyed
 
 
-## Common nodes
+## Super Common Tags
 
 @docs div
 @docs span
+@docs p
+@docs a
 
 -}
 
 import Html exposing (Attribute, Html)
-import Mixin exposing (Mixin, toAttributes)
+import Html.Keyed
+import Mixin exposing (Mixin, lift)
+
+
+-- Primitives
 
 
 
--- Core
+{-| Alternative to [`Html.node`](https://package.elm-lang.org/packages/elm/html/latest/Html#node). It is a handy way to create HTML nodes with `Mixin`.
 
-
-{-| Lift nodes to take `Mixin`s instead of `Attribute`s.
-
-    import Html
-    import Mixin.Html as Mixin
-
-    view : Html msg
-    view =
-        Mixin.lift Html.form
-            [ Mixin.class "foo"
-            ]
-            []
+    div : List (Mixin msg) -> List (Html msg) -> Html msg
+    div mixins children =
+        Mixin.node "div" mixins children
 
 -}
-lift : (List (Attribute msg) -> List (Html msg) -> Html msg) -> List (Mixin msg) -> List (Html msg) -> Html msg
-lift n mixins =
-    n <| List.concatMap toAttributes mixins
+node : String -> List (Mixin msg) -> List (Html msg) -> Html msg
+node name =
+    lift (Html.node name)
 
 
-{-| -}
+{-| Works just like `node`, but you add a unique identifier to each child node. See [`Html.Keyed.node`](https://package.elm-lang.org/packages/elm/html/latest/Html-Keyed#node) for details.
+
+-}
+keyed :
+    String
+    -> List (Mixin msg)
+    -> List ( String, Html msg )
+    -> Html msg
+keyed name =
+    lift (Html.Keyed.node name)
+
+
+{-| Represents a generic container with no special meaning.
+
+See [MDN document](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/div) for details.
+-}
 div : List (Mixin msg) -> List (Html msg) -> Html msg
-div mixins =
-    Html.div <| List.concatMap toAttributes mixins
+div =
+    lift Html.div
 
 
-{-| -}
+{-| Represents text with no specific meaning.
+
+See [MDN document](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/span) for details.
+-}
 span : List (Mixin msg) -> List (Html msg) -> Html msg
-span mixins =
-    Html.span <| List.concatMap toAttributes mixins
+span =
+    lift Html.span
+
+
+{-| Defines a portion that should be displayed as a paragraph.
+
+See [MDN document](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/p) for details.
+-}
+p : List (Mixin msg) -> List (Html msg) -> Html msg
+p =
+    lift Html.p
+
+
+{-| Represents a hyperlink, linking to another resource.
+
+See [MDN document](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a) for details.
+-}
+a : List (Mixin msg) -> List (Html msg) -> Html msg
+a =
+    lift Html.a

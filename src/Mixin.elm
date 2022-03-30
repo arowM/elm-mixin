@@ -1,97 +1,283 @@
 module Mixin exposing
     ( Mixin
     , fromAttributes
-    , toAttributes
     , batch
     , none
-    , fromAttribute
+    , style
+    , property
     , attribute
+    , map
     , class
     , id
+    , boolAttribute
+    , lift
     , when
     , unless
-    , map
+    , withMaybe
     )
 
-{-| A brief module for Mixins.
+{-| Core module for elm-mixin, which makes it easy to handle conditional attributes, [CSS custom properties](https://developer.mozilla.org/docs/Web/CSS/Using_CSS_custom_properties), and more.
 
 
-# Core
+# Primitives
 
 @docs Mixin
 @docs fromAttributes
-@docs toAttributes
+@docs map
 @docs batch
 @docs none
-
-
-# Attributes
-
-@docs fromAttribute
-
-
-## Common attributes
-
+@docs style
+@docs property
 @docs attribute
+
+
+# Super Common Attributes
+
 @docs class
 @docs id
+@docs boolAttribute
 
+# Apply on HTML Nodes
 
-## Conditional functions
+@docs lift
+
+# Conditional Functions
 
 @docs when
 @docs unless
-
-
-## Lower level functions
-
-@docs map
+@docs withMaybe
 
 -}
 
 import Html exposing (Attribute)
 import Html.Attributes as Attributes
+import Json.Encode exposing (Value)
 
 
 
 -- Core
 
 
-{-| Similar to `Html.Attribute msg` but more flexible and reusable.
+{-| Developer-friendly alternative to `Html.Attribute msg`.
 -}
 type Mixin msg
-    = Mixin (List (Attribute msg))
+    = Mixin (Mixin_ msg)
+
+
+type alias Mixin_ msg =
+    { attributes : List (Attribute msg)
+    , styles : List (String, String)
+    }
+
+
+toAttributes : Mixin msg -> List (Attribute msg)
+toAttributes (Mixin mixin) =
+    mixin.styles
+        |> List.foldl
+            (\(k, v) acc ->
+                acc ++ k ++ ":" ++ v ++ ";"
+            )
+            ""
+        |> Attributes.attribute "style"
+        |> (\a -> a :: mixin.attributes)
 
 
 {-| -}
 map : (a -> b) -> Mixin a -> Mixin b
-map f (Mixin attrs) =
-    Mixin <| List.map (Attributes.map f) attrs
-
-
-{-| -}
-fromAttributes : List (Attribute msg) -> Mixin msg
-fromAttributes =
+map f (Mixin mixin) =
     Mixin
+        { attributes = List.map (Attributes.map f) mixin.attributes
+        , styles = mixin.styles
+        }
+
+mappend : Mixin a -> Mixin a -> Mixin a
+mappend (Mixin a1) (Mixin a2) =
+    Mixin
+        { attributes = a1.attributes ++ a2.attributes
+        , styles = a1.styles ++ a2.styles
+        }
 
 
-{-| -}
-toAttributes : Mixin msg -> List (Attribute msg)
-toAttributes (Mixin attrs) =
-    attrs
+mempty : Mixin a
+mempty =
+    Mixin
+        { attributes = []
+        , styles = []
+        }
 
 
-{-| -}
-batch : List (Mixin msg) -> Mixin msg
-batch ls =
-    fromAttributes <| List.concatMap toAttributes ls
-
-
-{-| -}
+{-| No HTML attributes.
+-}
 none : Mixin msg
 none =
-    Mixin []
+    Mixin
+        { attributes = []
+        , styles = []
+        }
 
+
+{-| When you need to set a couple HTML attributes only if a certain condition is met, you can batch them together.
+
+
+    greeting : Animal -> Html msg
+    greeting animal =
+      Mixin.div
+        [ Mixin.class "greeting"
+        , case animal of
+            Goat { horns } ->
+                Mixin.batch
+                    [ Mixin.class "greeting-goat"
+                    , Mixin.style "--horns" (String.fromInt horns)
+                    ]
+
+            Dog ->
+                Mixin.batch
+                    [ Mixin.class "greeting-dog"
+                    ]
+
+            _ ->
+                Mixin.none
+        ]
+        [ text "Hello!"
+        ]
+
+Note1: `Mixin.none` and `Mixin.batch [ Mixin.none, Mixin.none ]` and `Mixin.batch []` all do the same thing.
+
+Note2: It simply flattens as each item appears; so `[ Mixin.batch [ foo, bar ], baz, Mixin.batch [ foobar, foobaz ] ]` is reduced to `[ foo, bar, baz, foobar, foobaz ]`.
+
+-}
+batch : List (Mixin msg) -> Mixin msg
+batch =
+    List.foldl
+        (\(Mixin a) (Mixin acc) ->
+            Mixin
+                { attributes = a.attributes ++ acc.attributes
+                , styles = a.styles ++ acc.styles
+                }
+        )
+        mempty
+
+
+{-| Specify a style.
+
+    greeting : Html msg
+    greeting =
+      Mixin.div
+        [ Mixin.style "background-color" "red"
+        , Mixin.style "height" "90px"
+        , Mixin.style "--min-height" "3em"
+        , Mixin.style "width" "100%"
+        ]
+        [ text "Hello!"
+        ]
+
+Unlike [`Html.Attributes.style`](https://package.elm-lang.org/packages/elm/html/latest/Html-Attributes#style), this `style` can also handle [CSS custom properties](https://developer.mozilla.org/docs/Web/CSS/Using_CSS_custom_properties) well.
+-}
+style : String -> String -> Mixin msg
+style key val =
+    Mixin
+        { styles = [ ( key, val ) ]
+        , attributes = []
+        }
+
+
+{-| Lower level function to build `Mixin` from [`Html.Attribute`](https://package.elm-lang.org/packages/elm/html/latest/Html#Attribute)s.
+
+    onClick : msg -> Mixin msg
+    onClick msg =
+        Mixin.fromAttributes
+            [ Html.Events.onClick msg
+            ]
+
+-}
+fromAttributes : List (Attribute msg) -> Mixin msg
+fromAttributes ls =
+    Mixin
+        { styles = []
+        , attributes = ls
+        }
+
+
+{-| Alternative to [`Html.Attributes.property`](https://package.elm-lang.org/packages/elm/html/latest/Html-Attributes#property).
+
+    import Json.Encode as Encode
+
+    class : String -> Mixin msg
+    class name =
+      Mixin.property "className" (Encode.string name)
+
+-}
+property : String -> Value -> Mixin msg
+property k v =
+    fromAttributes [ Attributes.property k v ]
+
+
+{-| Alternative to [`Html.Attributes.attribute`](https://package.elm-lang.org/packages/elm/html/latest/Html-Attributes#attribute).
+
+    class : String -> Mixin msg
+    class name =
+      Mixin.attribute "class" name
+
+-}
+attribute : String -> String -> Mixin msg
+attribute k v =
+    fromAttributes [ Attributes.attribute k v ]
+
+
+
+-- Super Common Attributes
+
+
+{-| Alternative to [`Html.Attributes.class`](https://package.elm-lang.org/packages/elm/html/latest/Html-Attributes#class).
+-}
+class : String -> Mixin msg
+class name =
+    fromAttributes [ Attributes.class name ]
+
+
+
+{-| Alternative to [`Html.Attributes.id`](https://package.elm-lang.org/packages/elm/html/latest/Html-Attributes#id).
+-}
+id : String -> Mixin msg
+id name =
+    fromAttributes [ Attributes.id name ]
+
+
+{-| Create arbitrary bool `attribute`.
+The `boolAttribute` converts the `Bool` argument into the string `"true"` or `"false"`.
+
+
+    ariaHidden : Bool -> Mixin msg
+    ariaHidden =
+        boolAttribute "aria-hidden"
+
+-}
+boolAttribute : String -> Bool -> Mixin msg
+boolAttribute name p =
+    attribute name <|
+        if p then "true" else "false"
+
+-- Apply on HTML Nodes
+
+
+{-| Apply `Mixin` on `Html` functions.
+
+
+    view : Html msg
+    view =
+        Mixin.lift Html.div
+            [ Mixin.class "foo"
+            , Mixin.id "bar"
+            ]
+            [ Html.text "baz"
+            ]
+
+-}
+lift : (List (Attribute msg) -> a) -> List (Mixin msg) -> a
+lift f mixins =
+    batch mixins
+        |> toAttributes
+        |> f
 
 
 -- Conditional functions
@@ -115,30 +301,10 @@ unless p =
     when <| not p
 
 
-
--- Attributes
-
-
-{-| -}
-fromAttribute : Attribute msg -> Mixin msg
-fromAttribute attr =
-    Mixin [ attr ]
-
-
-{-| -}
-attribute : String -> String -> Mixin msg
-attribute name val =
-    fromAttribute <|
-        Attributes.attribute name val
-
-
-{-| -}
-class : String -> Mixin msg
-class =
-    fromAttribute << Attributes.class
-
-
-{-| -}
-id : String -> Mixin msg
-id =
-    fromAttribute << Attributes.id
+{-| Insert a `Mixin` only when the value actually exists.
+-}
+withMaybe : Maybe a -> (a -> Mixin msg) -> Mixin msg
+withMaybe ma f =
+    case ma of
+        Nothing -> none
+        Just a -> f a
