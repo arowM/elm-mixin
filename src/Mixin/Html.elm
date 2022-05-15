@@ -1,5 +1,8 @@
 module Mixin.Html exposing
-    ( node
+    ( Html
+    , Attribute
+    , text
+    , node
     , keyed
     , div
     , span
@@ -12,6 +15,9 @@ module Mixin.Html exposing
 
 # Primitives
 
+@docs Html
+@docs Attribute
+@docs text
 @docs node
 @docs keyed
 
@@ -25,13 +31,32 @@ module Mixin.Html exposing
 
 -}
 
-import Html exposing (Html)
+import Html
 import Html.Keyed
 import Mixin exposing (Mixin, lift)
 
 
 
 -- Primitives
+
+
+{-| Reexport [`Html.Html`](https://package.elm-lang.org/packages/elm/html/latest/Html#Html) just for convenience.
+-}
+type alias Html msg =
+    Html.Html msg
+
+
+{-| Reexport [`Html.Attribute`](https://package.elm-lang.org/packages/elm/html/latest/Html#Attribute) just for convenience.
+-}
+type alias Attribute msg =
+    Html.Attribute msg
+
+
+{-| Reexport [`Html.text`](https://package.elm-lang.org/packages/elm/html/latest/Html#text) just for convenience.
+-}
+text : String -> Html msg
+text =
+    Html.text
 
 
 {-| Alternative to [`Html.node`](https://package.elm-lang.org/packages/elm/html/latest/Html#node). It is a handy way to create HTML nodes with `Mixin`.
