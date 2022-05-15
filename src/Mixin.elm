@@ -1,12 +1,12 @@
 module Mixin exposing
     ( Mixin
     , fromAttributes
+    , map
     , batch
     , none
     , style
     , property
     , attribute
-    , map
     , class
     , id
     , boolAttribute
@@ -37,9 +37,11 @@ module Mixin exposing
 @docs id
 @docs boolAttribute
 
+
 # Apply on HTML Nodes
 
 @docs lift
+
 
 # Conditional Functions
 
@@ -66,7 +68,7 @@ type Mixin msg
 
 type alias Mixin_ msg =
     { attributes : List (Attribute msg)
-    , styles : List (String, String)
+    , styles : List ( String, String )
     }
 
 
@@ -74,7 +76,7 @@ toAttributes : Mixin msg -> List (Attribute msg)
 toAttributes (Mixin mixin) =
     mixin.styles
         |> List.foldl
-            (\(k, v) acc ->
+            (\( k, v ) acc ->
                 acc ++ k ++ ":" ++ v ++ ";"
             )
             ""
@@ -88,13 +90,6 @@ map f (Mixin mixin) =
     Mixin
         { attributes = List.map (Attributes.map f) mixin.attributes
         , styles = mixin.styles
-        }
-
-mappend : Mixin a -> Mixin a -> Mixin a
-mappend (Mixin a1) (Mixin a2) =
-    Mixin
-        { attributes = a1.attributes ++ a2.attributes
-        , styles = a1.styles ++ a2.styles
         }
 
 
@@ -118,28 +113,27 @@ none =
 
 {-| When you need to set a couple HTML attributes only if a certain condition is met, you can batch them together.
 
-
     greeting : Animal -> Html msg
     greeting animal =
-      Mixin.div
-        [ Mixin.class "greeting"
-        , case animal of
-            Goat { horns } ->
-                Mixin.batch
-                    [ Mixin.class "greeting-goat"
-                    , Mixin.style "--horns" (String.fromInt horns)
-                    ]
+        Mixin.div
+            [ Mixin.class "greeting"
+            , case animal of
+                Goat { horns } ->
+                    Mixin.batch
+                        [ Mixin.class "greeting-goat"
+                        , Mixin.style "--horns" (String.fromInt horns)
+                        ]
 
-            Dog ->
-                Mixin.batch
-                    [ Mixin.class "greeting-dog"
-                    ]
+                Dog ->
+                    Mixin.batch
+                        [ Mixin.class "greeting-dog"
+                        ]
 
-            _ ->
-                Mixin.none
-        ]
-        [ text "Hello!"
-        ]
+                _ ->
+                    Mixin.none
+            ]
+            [ text "Hello!"
+            ]
 
 Note1: `Mixin.none` and `Mixin.batch [ Mixin.none, Mixin.none ]` and `Mixin.batch []` all do the same thing.
 
@@ -162,16 +156,17 @@ batch =
 
     greeting : Html msg
     greeting =
-      Mixin.div
-        [ Mixin.style "background-color" "red"
-        , Mixin.style "height" "90px"
-        , Mixin.style "--min-height" "3em"
-        , Mixin.style "width" "100%"
-        ]
-        [ text "Hello!"
-        ]
+        Mixin.div
+            [ Mixin.style "background-color" "red"
+            , Mixin.style "height" "90px"
+            , Mixin.style "--min-height" "3em"
+            , Mixin.style "width" "100%"
+            ]
+            [ text "Hello!"
+            ]
 
 Unlike [`Html.Attributes.style`](https://package.elm-lang.org/packages/elm/html/latest/Html-Attributes#style), this `style` can also handle [CSS custom properties](https://developer.mozilla.org/docs/Web/CSS/Using_CSS_custom_properties) well.
+
 -}
 style : String -> String -> Mixin msg
 style key val =
@@ -204,7 +199,7 @@ fromAttributes ls =
 
     class : String -> Mixin msg
     class name =
-      Mixin.property "className" (Encode.string name)
+        Mixin.property "className" (Encode.string name)
 
 -}
 property : String -> Value -> Mixin msg
@@ -216,7 +211,7 @@ property k v =
 
     class : String -> Mixin msg
     class name =
-      Mixin.attribute "class" name
+        Mixin.attribute "class" name
 
 -}
 attribute : String -> String -> Mixin msg
@@ -235,7 +230,6 @@ class name =
     fromAttributes [ Attributes.class name ]
 
 
-
 {-| Alternative to [`Html.Attributes.id`](https://package.elm-lang.org/packages/elm/html/latest/Html-Attributes#id).
 -}
 id : String -> Mixin msg
@@ -246,7 +240,6 @@ id name =
 {-| Create arbitrary bool `attribute`.
 The `boolAttribute` converts the `Bool` argument into the string `"true"` or `"false"`.
 
-
     ariaHidden : Bool -> Mixin msg
     ariaHidden =
         boolAttribute "aria-hidden"
@@ -255,13 +248,18 @@ The `boolAttribute` converts the `Bool` argument into the string `"true"` or `"f
 boolAttribute : String -> Bool -> Mixin msg
 boolAttribute name p =
     attribute name <|
-        if p then "true" else "false"
+        if p then
+            "true"
+
+        else
+            "false"
+
+
 
 -- Apply on HTML Nodes
 
 
 {-| Apply `Mixin` on `Html` functions.
-
 
     view : Html msg
     view =
@@ -278,6 +276,7 @@ lift f mixins =
     batch mixins
         |> toAttributes
         |> f
+
 
 
 -- Conditional functions
@@ -306,5 +305,8 @@ unless p =
 withMaybe : Maybe a -> (a -> Mixin msg) -> Mixin msg
 withMaybe ma f =
     case ma of
-        Nothing -> none
-        Just a -> f a
+        Nothing ->
+            none
+
+        Just a ->
+            f a
