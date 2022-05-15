@@ -7,9 +7,9 @@ Developer-friendly alternative to [`Html.Attribute`](https://package.elm-lang.or
 ## Example
 
 ```elm
-import Html exposing (Html)
-import Mixin exposing (Mixin)
-import Mixin.Html as Mixin
+import Html as RawHtml
+import Mixin exposing (Html, Mixin)
+import Mixin.Html as Html
 import Mixin.Events as Events
 
 ...
@@ -26,14 +26,14 @@ formInput isInvalid onInput =
 
 view : Model -> Html Msg
 view model =
-    Mixin.lift Html.form
+    Mixin.lift RawHtml.form
         [ Mixin.class "form"
         ]
-        [ Mixin.div
+        [ Html.div
             [ Mixin.class "form_row"
             ]
             [ Html.text "Name"
-            , Mixin.lift Html.input
+            , Mixin.lift RawHtml.input
                 [ formInput (isInvalidName model) ChangeName
                 , Mixin.class "formInput-name"
                 , Mixin.style "--min-width" "10em"
@@ -44,11 +44,11 @@ view model =
                 ]
                 []
             ]
-        , Mixin.div
+        , Html.div
             [ Mixin.class "form_row"
             ]
             [ Html.text "Age"
-            , Mixin.lift Html.input
+            , Mixin.lift RawHtml.input
                 [ formInput (isInvalidAge model) ChangeAge
                 , Mixin.class "formInput-age"
                 , Mixin.style "--min-width" "6em"
