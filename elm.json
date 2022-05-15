@@ -3,7 +3,7 @@
     "name": "arowM/elm-mixin",
     "summary": "Developer-friendly alternative to Html.Attribute",
     "license": "MIT",
-    "version": "5.0.0",
+    "version": "5.1.0",
     "exposed-modules": [
         "Mixin",
         "Mixin.Events",
