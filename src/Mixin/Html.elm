@@ -3,6 +3,7 @@ module Mixin.Html exposing
     , Attribute
     , text
     , node
+    , map
     , keyed
     , div
     , span
@@ -19,6 +20,7 @@ module Mixin.Html exposing
 @docs Attribute
 @docs text
 @docs node
+@docs map
 @docs keyed
 
 
@@ -69,6 +71,13 @@ text =
 node : String -> List (Mixin msg) -> List (Html msg) -> Html msg
 node name =
     lift (Html.node name)
+
+
+{-| Same as [`Html.map`](https://package.elm-lang.org/packages/elm/html/latest/Html#map).
+-}
+map : (a -> msg) -> Html a -> Html msg
+map =
+    Html.map
 
 
 {-| Works just like `node`, but you add a unique identifier to each child node. See [`Html.Keyed.node`](https://package.elm-lang.org/packages/elm/html/latest/Html-Keyed#node) for details.
