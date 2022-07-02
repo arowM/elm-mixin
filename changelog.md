@@ -1,3 +1,17 @@
+# 5.2.0
+
+### Added
+
+* `Mixin.Html.map`
+
+# 5.1.0
+
+### Added
+
+* `Mixin.Html.Html`
+* `Mixin.Html.Attribute`
+* `Mixin.Html.text`
+
 # 5.0.0
 
 ### Improvements
