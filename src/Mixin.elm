@@ -9,7 +9,11 @@ module Mixin exposing
     , attribute
     , class
     , id
+    , checked
+    , selected
+    , disabled
     , boolAttribute
+    , boolProperty
     , lift
     , when
     , unless
@@ -35,7 +39,15 @@ module Mixin exposing
 
 @docs class
 @docs id
+
+
+# Boolean Attributes
+
+@docs checked
+@docs selected
+@docs disabled
 @docs boolAttribute
+@docs boolProperty
 
 
 # Apply on HTML Nodes
@@ -235,6 +247,40 @@ class name =
 id : String -> Mixin msg
 id name =
     fromAttributes [ Attributes.id name ]
+
+
+{-| Alternative to [`Html.Attributes.checked`](https://package.elm-lang.org/packages/elm/html/latest/Html-Attributes#checked)
+-}
+checked : Bool -> Mixin msg
+checked p =
+    fromAttributes [ Attributes.checked p ]
+
+
+{-| Alternative to [`Html.Attributes.selected`](https://package.elm-lang.org/packages/elm/html/latest/Html-Attributes#selected)
+-}
+selected : Bool -> Mixin msg
+selected p =
+    fromAttributes [ Attributes.selected p ]
+
+
+{-| Alternative to [`Html.Attributes.disabled`](https://package.elm-lang.org/packages/elm/html/latest/Html-Attributes#disabled)
+-}
+disabled : Bool -> Mixin msg
+disabled p =
+    fromAttributes [ Attributes.disabled p ]
+
+
+{-| Create arbitrary bool `property`.
+The `boolProperty` converts the `Bool` argument into `Json.Encode.Value` with `Json.Encode.bool`.
+
+    ariaHiddenProperty : Bool -> Mixin msg
+    ariaHiddenProperty =
+        boolProperty "aria-hidden"
+
+-}
+boolProperty : String -> Bool -> Mixin msg
+boolProperty name p =
+    property name (Json.Encode.bool p)
 
 
 {-| Create arbitrary bool `attribute`.
