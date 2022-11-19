@@ -1,3 +1,12 @@
+# 5.3.0
+
+### Added
+
+* `Mixin.checked`
+* `Mixin.selected`
+* `Mixin.disabled`
+* `Mixin.boolProperty`
+
 # 5.2.0
 
 ### Added
